@@ -91,6 +91,8 @@ app.post('/login', async (req, res) => {
     })
 })
 
-app.listen(process.env.PORT, () => {
-    console.log('server running')
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+    console.log(`server running on port ${PORT}`)
 })
