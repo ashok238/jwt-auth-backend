@@ -7,21 +7,16 @@ module.exports = (req, res, next) => {
     }
 
     try {
-        console.log('token:  ');
         const token = req.headers.authorization.split(' ')[1];
-        console.log('token:  ' + token);
         if (!token) {
             throw Error('Authentication failed');
         }
 
-        const decodedToken = jwt.verify(token, 'supersecret_key');
-
-        console.log('decoded token' + decodedToken);
+        req.userData = jwt.verify(token, process.env.JWT_SECRET);
 
         next();
 
     } catch (err) {
-        console.log(err);
         const error = new HttpError('Authentication failed', 400);
         return next(error);
     }
