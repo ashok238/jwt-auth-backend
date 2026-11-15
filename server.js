@@ -1,6 +1,12 @@
 const dotenv = require('dotenv')
 dotenv.config()
 
+const missingEnv = ['JWT_SECRET', 'MONGODB_URI'].filter((name) => !process.env[name])
+if (missingEnv.length) {
+    console.error(`Missing required environment variables: ${missingEnv.join(', ')}`)
+    process.exit(1)
+}
+
 const mongoose = require('mongoose')
 const app = require('./app')
 
