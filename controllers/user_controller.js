@@ -22,7 +22,7 @@ const tokenExpiresIn = () => Number(process.env.JWT_EXPIRES_IN_SECONDS) || 3600
 const signup = async (req, res) => {
     const credentials = readCredentials(req.body)
     if (!credentials) {
-        return res.status(401).json({ message: 'username and password are required' })
+        return res.status(400).json({ message: 'username and password are required' })
     }
     const { username, password } = credentials
 
