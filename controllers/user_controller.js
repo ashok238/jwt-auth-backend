@@ -2,11 +2,32 @@ const User = require('../models/user_model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
-const signup = async (req, res) => {
-    const { username, password } = req.body;
+const MIN_PASSWORD_LENGTH = 8
 
-    if (!username || !password) {
+// Rejects non-string values such as { "$ne": null } to prevent NoSQL operator injection
+const readCredentials = (body = {}) => {
+    const { username, password } = body
+    if (typeof username !== 'string' || typeof password !== 'string') {
+        return null
+    }
+    const trimmed = username.trim()
+    if (!trimmed || !password) {
+        return null
+    }
+    return { username: trimmed, password }
+}
+
+const tokenExpiresIn = () => Number(process.env.JWT_EXPIRES_IN_SECONDS) || 3600
+
+const signup = async (req, res) => {
+    const credentials = readCredentials(req.body)
+    if (!credentials) {
         return res.status(400).json({ message: 'username and password are required' })
+    }
+    const { username, password } = credentials
+
+    if (password.length < MIN_PASSWORD_LENGTH) {
+        return res.status(400).json({ message: `password must be at least ${MIN_PASSWORD_LENGTH} characters` })
     }
 
     const existingUser = await User.findOne({ username })
@@ -25,35 +46,42 @@ const signup = async (req, res) => {
 };
 
 const login = async (req, res) => {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
+    const credentials = readCredentials(req.body)
+    if (!credentials) {
         return res.status(400).json({ message: 'username and password are required' })
     }
+    const { username, password } = credentials
 
     const user = await User.findOne({ username })
+    const isMatch = user ? await bcrypt.compare(password, user.password) : false
 
-    if (!user) {
-        return res.status(404).json({ message: 'username not found' })
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password)
-
+    // Same response for unknown user and wrong password to avoid username enumeration
     if (!isMatch) {
-        return res.status(401).json({ message: 'password incorrect' })
+        return res.status(401).json({ message: 'invalid username or password' })
     }
 
+    const expiresIn = tokenExpiresIn()
     const token = jwt.sign(
-        {
-            username: user.username
-        },
-        process.env.JWT_SECRET
+        { userId: user._id.toString(), username: user.username },
+        process.env.JWT_SECRET,
+        { expiresIn }
     )
 
     res.json({
-        message: "Login successful",
-        token
+        message: 'Login successful',
+        token,
+        userId: user._id.toString(),
+        username: user.username,
+        expiresIn
     })
 };
 
-module.exports = { signup, login };
+const getMe = async (req, res) => {
+    const user = await User.findById(req.userData.userId).select('-password')
+    if (!user) {
+        return res.status(401).json({ message: 'Authentication failed' })
+    }
+    res.json({ userId: user._id.toString(), username: user.username })
+};
+
+module.exports = { signup, login, getMe };
