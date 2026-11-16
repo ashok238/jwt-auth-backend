@@ -56,11 +56,17 @@ test('malformed JSON body returns 400', async () => {
     expect(res.status).toBe(400)
 })
 
-test('database error returns 500 via error handler', async () => {
+test('database error returns generic 500 without leaking details', async () => {
     User.findOne.mockRejectedValue(new Error('db down'))
     const res = await request(app).post('/login').send({ username: 'a', password: 'p' })
     expect(res.status).toBe(500)
-    expect(res.body.message).toBe('db down')
+    expect(res.body).toEqual({ message: 'Something went wrong' })
+})
+
+test('GET /health reports environment and version', async () => {
+    const res = await request(app).get('/health')
+    expect(res.status).toBe(200)
+    expect(res.body).toEqual({ status: 'ok', env: 'test', version: require('../package.json').version, db: 'disconnected' })
 })
 
 test('sends CORS and security headers', async () => {
