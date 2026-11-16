@@ -71,7 +71,7 @@ test('GET /health reports environment and version', async () => {
 
 test('sends CORS and security headers', async () => {
     const res = await request(app).post('/login').send({})
-    expect(res.headers['access-control-allow-origin']).toBe('*')
+    expect(res.headers['access-control-allow-origin']).toBe('http://localhost:5173')
     expect(res.headers['x-content-type-options']).toBe('nosniff')
 })
 
