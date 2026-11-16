@@ -1,10 +1,12 @@
-# Runs the unit tests whenever code is pushed to the development branch
+# Runs the unit tests on pushes and pull requests to every environment branch
 
 name: Unit Tests
 
 on:
   push:
-    branches: [development]
+    branches: [development, staging, main]
+  pull_request:
+    branches: [development, staging, main]
 
 jobs:
   test:

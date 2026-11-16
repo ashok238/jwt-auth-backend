@@ -1,5 +1,6 @@
 const HttpError = require("../models/error");
 const jwt = require('jsonwebtoken');
+const config = require('../config');
 
 module.exports = (req, res, next) => {
     if (req.method === 'OPTIONS') {
@@ -12,7 +13,7 @@ module.exports = (req, res, next) => {
     }
 
     try {
-        const { userId, username } = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
+        const { userId, username } = jwt.verify(token, config.jwtSecret, { algorithms: ['HS256'] });
         // Tokens issued before userId was added to the payload are rejected
         if (!userId) {
             throw new Error('Token missing userId');

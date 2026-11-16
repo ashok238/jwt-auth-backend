@@ -1,6 +1,7 @@
 const User = require('../models/user_model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const config = require('../config')
 
 const MIN_PASSWORD_LENGTH = 8
 
@@ -16,8 +17,6 @@ const readCredentials = (body = {}) => {
     }
     return { username: trimmed, password }
 }
-
-const tokenExpiresIn = () => Number(process.env.JWT_EXPIRES_IN_SECONDS) || 3600
 
 const signup = async (req, res) => {
     const credentials = readCredentials(req.body)
@@ -60,10 +59,10 @@ const login = async (req, res) => {
         return res.status(401).json({ message: 'invalid username or password' })
     }
 
-    const expiresIn = tokenExpiresIn()
+    const expiresIn = config.jwtExpiresInSeconds
     const token = jwt.sign(
         { userId: user._id.toString(), username: user.username },
-        process.env.JWT_SECRET,
+        config.jwtSecret,
         { expiresIn }
     )
 

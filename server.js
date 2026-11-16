@@ -1,24 +1,14 @@
-const dotenv = require('dotenv')
-dotenv.config()
-
-const missingEnv = ['JWT_SECRET', 'MONGODB_URI'].filter((name) => !process.env[name])
-if (missingEnv.length) {
-    console.error(`Missing required environment variables: ${missingEnv.join(', ')}`)
-    process.exit(1)
-}
-
 const mongoose = require('mongoose')
+const config = require('./config')
 const app = require('./app')
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(config.mongodbUri)
     .then(() => {
-        console.log('monogodb connected')
+        console.log('mongodb connected')
     }).catch((err) => {
-        console.log(' mongodb not connected')
+        console.error('mongodb not connected', err.message)
     })
 
-const PORT = process.env.PORT || 3000
-
-app.listen(PORT, () => {
-    console.log(`server running on port ${PORT}`)
+app.listen(config.port, () => {
+    console.log(`server running on port ${config.port} [${config.appEnv}]`)
 })

@@ -3,12 +3,13 @@ const rateLimit = require('express-rate-limit')
 
 const userController = require('../controllers/user_controller')
 const auth = require('../middleware/auth')
+const config = require('../config')
 
 const router = express.Router()
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    limit: Number(process.env.AUTH_RATE_LIMIT) || 20,
+    limit: config.authRateLimit,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     message: { message: 'Too many attempts, please try again later' }
