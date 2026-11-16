@@ -40,7 +40,7 @@ const buildConfig = (env) => {
         jwtExpiresInSeconds: toNumber(env.JWT_EXPIRES_IN_SECONDS, 3600),
         corsOrigin: env.CORS_ORIGIN
             ? env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
-            : 'http://localhost:5173',
+            : '*',
         trustProxy: toNumber(env.TRUST_PROXY, 0),
         authRateLimit: toNumber(env.AUTH_RATE_LIMIT, defaults.authRateLimit),
         logFormat: defaults.logFormat,
